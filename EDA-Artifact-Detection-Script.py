@@ -11,7 +11,7 @@ from ArtifactClassifiers import predict_binary_classifier, predict_multiclass_cl
 
 matplotlib.rcParams['ps.useafm'] = True
 matplotlib.rcParams['pdf.use14corefonts'] = True
-matplotlib.rcParams['text.usetex'] = True
+matplotlib.rcParams['text.usetex'] = False
 
 
 def getWaveletData(data):
@@ -29,7 +29,7 @@ def getWaveletData(data):
 
     # Create wavelet dataframes
     oneSecond = pd.date_range(start=startTime, periods=len(data), freq='1s')
-    halfSecond = pd.date_range(start=startTime, periods=len(data), freq='500L')
+    halfSecond = pd.date_range(start=startTime, periods=len(data), freq='500ms')
 
     # Compute wavelets
     cA_n, cD_3, cD_2, cD_1 = pywt.wavedec(data['EDA'], 'Haar', level=3) #3 = 1Hz, 2 = 2Hz, 1=4Hz
@@ -109,10 +109,10 @@ def getFeatures(data,w1,wH):
 
     all_feat = np.hstack([statFeat,waveletFeat])
     
-    if np.Inf in all_feat:
+    if np.inf in all_feat:
         print("Inf")
     
-    if np.NaN in all_feat:
+    if np.nan in all_feat:
         print("NaN")
 
     return list(all_feat)
@@ -308,7 +308,7 @@ def plotData(data,labels,classifierList,filteredPlot=0,secondsPlot=0):
             plt.legend(['Raw SC','Filtered SC'],loc=0)
 
         # Label and Title each subplot
-        plt.ylabel('$\mu$S')
+        plt.ylabel(chr(956) + "S")
         plt.title(key)
     
     # Only include x axis label on final subplot

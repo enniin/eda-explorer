@@ -99,7 +99,7 @@ def _loadSingleFile_E4(filepath,list_of_columns, expected_sample_rate,freq):
     
     # Get the startTime and sample rate
     startTime = pd.to_datetime(float(data.columns.values[0]),unit="s")
-    sampleRate = float(data.iloc[0][0])
+    sampleRate = float(data.iloc[0].iloc[0])
     data = data[data.index!=0]
     data.index = data.index-1
     
@@ -116,17 +116,17 @@ def _loadSingleFile_E4(filepath,list_of_columns, expected_sample_rate,freq):
 
 def loadData_E4(filepath):
     # Load EDA data
-    eda_data = _loadSingleFile_E4(os.path.join(filepath,'EDA.csv'),["EDA"],4,"250L")
+    eda_data = _loadSingleFile_E4(os.path.join(filepath,'EDA.csv'),["EDA"],4,"250ms")
     # Get the filtered data using a low-pass butterworth filter (cutoff:1hz, fs:8hz, order:6)
     eda_data['filtered_eda'] =  butter_lowpass_filter(eda_data['EDA'], 1.0, 8, 6)
 
     # Load ACC data
-    acc_data = _loadSingleFile_E4(os.path.join(filepath,'ACC.csv'),["AccelX","AccelY","AccelZ"],32,"31250U")
+    acc_data = _loadSingleFile_E4(os.path.join(filepath,'ACC.csv'),["AccelX","AccelY","AccelZ"],32,"31250us")
     # Scale the accelometer to +-2g
     acc_data[["AccelX","AccelY","AccelZ"]] = acc_data[["AccelX","AccelY","AccelZ"]]/64.0
 
     # Load Temperature data
-    temperature_data = _loadSingleFile_E4(os.path.join(filepath,'TEMP.csv'),["Temp"],4,"250L")
+    temperature_data = _loadSingleFile_E4(os.path.join(filepath,'TEMP.csv'),["Temp"],4,"250ms")
     
     data = eda_data.join(acc_data, how='outer')
     data = data.join(temperature_data, how='outer')
@@ -229,17 +229,17 @@ def interpolateDataTo8Hz(data,sample_rate,startTime):
     if sample_rate<8:
         # Upsample by linear interpolation
         if sample_rate==2:
-            data.index = pd.date_range(start=startTime, periods=len(data), freq='500L')
+            data.index = pd.date_range(start=startTime, periods=len(data), freq='500ms')
         elif sample_rate==4:
-            data.index = pd.date_range(start=startTime, periods=len(data), freq='250L')
-        data = data.resample("125L").mean()
+            data.index = pd.date_range(start=startTime, periods=len(data), freq='250ms')
+        data = data.resample("125ms").mean()
     else:
         if sample_rate>8:
             # Downsample
             idx_range = list(range(0,len(data))) # TODO: double check this one
             data = data.iloc[idx_range[0::int(int(sample_rate)/8)]]
         # Set the index to be 8Hz
-        data.index = pd.date_range(start=startTime, periods=len(data), freq='125L')
+        data.index = pd.date_range(start=startTime, periods=len(data), freq='125ms')
 
     # Interpolate all empty values
     data = interpolateEmptyValues(data)
